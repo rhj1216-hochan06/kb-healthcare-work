@@ -37,6 +37,7 @@ const wait = (duration = 220) =>
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordPattern = /^[A-Za-z0-9]{8,24}$/;
 
+// 과제용 가정: 실제 JWT 대신 만료 시각을 담은 mock token 문자열을 사용합니다.
 const createToken = (prefix: 'mock-access-token' | 'mock-refresh-token', ttlMs: number) =>
   `${prefix}|${Date.now() + ttlMs}|${Math.random().toString(36).slice(2)}`;
 
@@ -80,6 +81,7 @@ const issueTokens = (): AuthTokenResponse => ({
   refreshToken: createToken('mock-refresh-token', REFRESH_TOKEN_TTL_MS),
 });
 
+// 과제용 가정: DB/API 서버 대신 메모리 배열로 task 데이터를 제공합니다.
 let mockTasks: MockTask[] = Array.from({ length: 72 }, (_, index) => {
   const sequence = index + 1;
   const status = sequence % 3 === 0 ? 'DONE' : 'TODO';

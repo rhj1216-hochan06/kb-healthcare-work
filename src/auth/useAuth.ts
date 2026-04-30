@@ -71,6 +71,7 @@ export const useAuth = () => {
       throw new ApiError(401, 'refreshToken이 없어 다시 로그인해주세요.');
     }
 
+    // 과제용 mock에서는 저장된 refreshToken을 cookie 대신 함수 인자로 전달합니다.
     const refreshPromise = api
       .refreshToken(currentRefreshToken)
       .then((nextTokens) => {

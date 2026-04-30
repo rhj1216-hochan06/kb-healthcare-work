@@ -7,6 +7,7 @@ export const getStoredAccessToken = () => window.localStorage.getItem(ACCESS_TOK
 
 export const getStoredRefreshToken = () => window.localStorage.getItem(REFRESH_TOKEN_KEY);
 
+// 과제용 가정: refresh cookie 대신 localStorage에 mock token을 보관합니다.
 export const saveTokens = (tokens: AuthTokenResponse) => {
   window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
   window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);

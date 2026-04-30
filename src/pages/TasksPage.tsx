@@ -8,6 +8,7 @@ import { PageHeader } from '../components/ui/PageHeader';
 import { TaskItem } from '../types';
 import { toApiError } from '../utils/apiError';
 
+// 과제용 가정: 카드 높이를 고정해 가상 스크롤 렌더링 범위를 계산합니다.
 const TASK_ITEM_HEIGHT = 148;
 const VIRTUAL_OVERSCAN = 4;
 

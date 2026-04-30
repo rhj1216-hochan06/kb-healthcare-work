@@ -10,6 +10,8 @@ import {
 } from '../types';
 
 const PAGE_SIZE = 12;
+const ACCESS_TOKEN_TTL_MS = 60 * 60 * 1000;
+const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 
 type MockTask = TaskItem & {
   registerDatetime: string;
@@ -33,7 +35,50 @@ const wait = (duration = 220) =>
   });
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordPattern = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,24}$/;
+const passwordPattern = /^[A-Za-z0-9]{8,24}$/;
+
+const createToken = (prefix: 'mock-access-token' | 'mock-refresh-token', ttlMs: number) =>
+  `${prefix}|${Date.now() + ttlMs}|${Math.random().toString(36).slice(2)}`;
+
+const getTokenExpiry = (token: string, prefix: 'mock-access-token' | 'mock-refresh-token') => {
+  if (!token.startsWith(`${prefix}|`)) {
+    return null;
+  }
+
+  const [, expiresAt] = token.split('|');
+  const expiry = Number(expiresAt);
+  return Number.isFinite(expiry) ? expiry : null;
+};
+
+const isLegacyMockToken = (token: string, prefix: 'mock-access-token' | 'mock-refresh-token') =>
+  token === prefix || token.startsWith(`${prefix}-`);
+
+const isMockToken = (token: string | null, prefix: 'mock-access-token' | 'mock-refresh-token') => {
+  if (!token) {
+    return false;
+  }
+
+  if (isLegacyMockToken(token, prefix)) {
+    return true;
+  }
+
+  const expiry = getTokenExpiry(token, prefix);
+  return expiry !== null && expiry > Date.now();
+};
+
+const isExpiredMockToken = (token: string | null, prefix: 'mock-access-token' | 'mock-refresh-token') => {
+  if (!token) {
+    return false;
+  }
+
+  const expiry = getTokenExpiry(token, prefix);
+  return expiry !== null && expiry <= Date.now();
+};
+
+const issueTokens = (): AuthTokenResponse => ({
+  accessToken: createToken('mock-access-token', ACCESS_TOKEN_TTL_MS),
+  refreshToken: createToken('mock-refresh-token', REFRESH_TOKEN_TTL_MS),
+});
 
 let mockTasks: MockTask[] = Array.from({ length: 72 }, (_, index) => {
   const sequence = index + 1;
@@ -52,7 +97,11 @@ let mockTasks: MockTask[] = Array.from({ length: 72 }, (_, index) => {
 });
 
 const requireAuth = (accessToken: string | null) => {
-  if (!accessToken || !accessToken.startsWith('mock-access-token')) {
+  if (isExpiredMockToken(accessToken, 'mock-access-token')) {
+    throw new ApiError(401, 'accessToken이 만료되었습니다.');
+  }
+
+  if (!isMockToken(accessToken, 'mock-access-token')) {
     throw new ApiError(401, '로그인이 필요한 요청입니다.');
   }
 };
@@ -78,10 +127,21 @@ export const api = {
       throw new ApiError(400, '이메일 또는 비밀번호를 확인해주세요.');
     }
 
-    return {
-      accessToken: `mock-access-token-${Date.now()}`,
-      refreshToken: `mock-refresh-token-${Date.now()}`,
-    };
+    return issueTokens();
+  },
+
+  async refreshToken(refreshToken: string | null): Promise<AuthTokenResponse> {
+    await wait();
+
+    if (isExpiredMockToken(refreshToken, 'mock-refresh-token')) {
+      throw new ApiError(401, 'refreshToken이 만료되었습니다. 다시 로그인해주세요.');
+    }
+
+    if (!isMockToken(refreshToken, 'mock-refresh-token')) {
+      throw new ApiError(401, '유효하지 않은 refreshToken입니다.');
+    }
+
+    return issueTokens();
   },
 
   async getDashboard(accessToken: string | null): Promise<DashboardResponse> {

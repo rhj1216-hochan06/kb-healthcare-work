@@ -1,46 +1,155 @@
-# Getting Started with Create React App
+# KB Healthcare Frontend Assignment
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+`docs/requirement 1.md`와 `docs/openapi 1.yaml`을 기준으로 구현한 React/TypeScript 프론트엔드 과제입니다. 별도 API 서버 없이 함수 레벨 mock API로 인증, 대시보드, 할 일 목록/상세, 삭제, 회원정보 흐름을 확인할 수 있습니다.
 
-## Available Scripts
+## 실행 방법
 
-In the project directory, you can run:
+```bash
+npm install
+npm start
+```
 
-### `npm start`
+- 개발 서버 기본 주소: `http://localhost:3000`
+- 주요 라우트: `/`, `/sign-in`, `/task`, `/task/:id`, `/user`
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## 빌드/테스트
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```bash
+npm run build
+npm test -- --watchAll=false
+```
 
-### `npm test`
+작성 시점 검증 결과:
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+| 명령                           | 결과           |
+| ------------------------------ | -------------- |
+| `npm run build`                | 통과           |
+| `npm test -- --watchAll=false` | 통과, 11 tests |
 
-### `npm run build`
+## 구현 요약
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+| 영역      | 구현 내용                                                                           |
+| --------- | ----------------------------------------------------------------------------------- |
+| 기술 스택 | React 19, TypeScript, CRA, TailwindCSS                                              |
+| 라우팅    | 브라우저 History API 기반 자체 라우팅                                               |
+| 화면 구조 | `pages`, `components`, `layout`, `auth`, `api`, `utils`로 역할 분리                 |
+| 색상      | `src/utils/colors.ts`의 색상 토큰을 CSS 변수로 주입                                 |
+| 폰트      | Pretendard CDN import 및 Tailwind fontFamily 적용                                   |
+| API       | `src/api/mockApi.ts`에서 함수 레벨 mock 처리                                        |
+| 인증      | access token, refresh token을 localStorage에 저장하고 401 발생 시 refresh 후 재시도 |
+| 테스트    | 로그인, refresh, 목록, 404, 삭제 모달, 회원정보 렌더링 검증                         |
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+## 요구사항 충족 체크리스트
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+| 요구사항                                  | 구현 상태 | 구현 위치                                                      |
+| ----------------------------------------- | --------- | -------------------------------------------------------------- |
+| React@18/19 + TypeScript                  | 충족      | `package.json`, `src/**/*.tsx`                                 |
+| 항목별 아이콘 표시                        | 충족      | `src/components/icons.tsx`, `src/layout/SideNavigation.tsx`    |
+| 색상 토큰 관리                            | 충족      | `src/utils/colors.ts`, `src/components/ThemeStyle.tsx`         |
+| Pretendard 폰트                           | 충족      | `src/index.css`, `tailwind.config.js`                          |
+| GNB/LNB 라우트 맵                         | 충족      | `src/layout/SideNavigation.tsx`, `src/routes.ts`               |
+| 로그인/회원정보 메뉴 전환                 | 충족      | `src/layout/SideNavigation.tsx`, `src/auth/useAuth.ts`         |
+| 대시보드 수치 표시                        | 충족      | `src/pages/DashboardPage.tsx`, `src/api/mockApi.ts`            |
+| 로그인 label/validation/errorMessage 모달 | 충족      | `src/pages/SignInPage.tsx`                                     |
+| 할 일 목록 카드 표시                      | 충족      | `src/pages/TasksPage.tsx`, `src/components/tasks/TaskCard.tsx` |
+| 가상 스크롤링                             | 충족      | `src/pages/TasksPage.tsx`                                      |
+| 무한 스크롤                               | 충족      | `src/pages/TasksPage.tsx`, `src/api/mockApi.ts`                |
+| 상세 페이지/404 화면                      | 충족      | `src/pages/TaskDetailPage.tsx`                                 |
+| 삭제 확인 input 모달                      | 충족      | `src/pages/TaskDetailPage.tsx`                                 |
+| 회원정보 표시                             | 충족      | `src/pages/UserPage.tsx`                                       |
+| OpenAPI 기준 mock API                     | 충족      | `docs/openapi 1.yaml`, `src/api/mockApi.ts`, `src/types.ts`    |
+| Agent AI 사용 문서                        | 확인 필요 | 현재 작업 폴더 기준 `AI_USAGE.md` 파일이 존재하지 않음         |
 
-### `npm run eject`
+## 페이지별 구현 결과
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### 대시보드 `/`
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+- `[GET] /api/dashboard` mock 결과로 `numOfTask`, `numOfRestTask`, `numOfDoneTask`를 표시합니다.
+- 로그인하지 않은 상태에서는 인증 필요 화면을 표시합니다.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+![대시보드](public/results/대시보드.png)
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+### 로그인 `/sign-in`
 
-## Learn More
+- `[POST] /api/sign-in` mock을 호출합니다.
+- email label과 password label을 표시합니다.
+- email 형식과 OpenAPI password 규칙(`^[A-Za-z0-9]+$`, 8~24자)을 검증합니다.
+- 200이 아닌 응답은 `errorMessage`를 모달로 표시합니다.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+![로그인 페이지](public/results/로그인페이지.png)
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 할 일 목록 `/task`
+
+- `[GET] /api/task?page=...` mock 결과를 카드 목록으로 표시합니다.
+- 각 카드는 `title`, `memo`, `status`, `id`를 보여줍니다.
+- `TASK_ITEM_HEIGHT`와 overscan 기준으로 화면에 필요한 카드만 렌더링합니다.
+- 스크롤이 목록 끝에 가까워지면 `hasNext`를 확인하고 다음 페이지를 호출합니다.
+
+![할 일 목록](public/results/할일목록.png)
+
+### 할 일 상세 `/task/:id`
+
+- `[GET] /api/task/{id}` mock 결과로 `title`, `memo`, `registerDatetime`을 표시합니다.
+- 404 응답이면 목록으로 돌아갈 수 있는 화면을 표시합니다.
+- 삭제 버튼을 제공합니다.
+
+![할 일 상세](public/results/할일%20상세.png)
+
+### 삭제 확인 모달
+
+- 삭제 버튼 클릭 시 id 확인 input이 있는 모달을 표시합니다.
+- input 값이 현재 task id와 같을 때만 `제출` 버튼이 활성화됩니다.
+- 제출 시 `[DELETE] /api/task/{id}` mock을 호출하고 `/task`로 이동합니다.
+
+![할 일 삭제 다이얼로그](public/results/할일삭제%20다이얼로그.png)
+
+### 회원정보 `/user`
+
+- `[GET] /api/user` mock 결과로 `name`, `memo`를 표시합니다.
+- 로그아웃 버튼으로 저장된 토큰을 제거하고 로그인 화면으로 이동합니다.
+
+![회원정보](public/results/회원정보.png)
+
+## API/mock 처리 방식
+
+API 서버는 별도로 띄우지 않고 `src/api/mockApi.ts`에서 함수 레벨 mock으로 처리합니다.
+
+| OpenAPI                 | mock 함수           | 구현 내용                                            |
+| ----------------------- | ------------------- | ---------------------------------------------------- |
+| `POST /api/sign-in`     | `api.signIn`        | email/password 검증 후 accessToken/refreshToken 발급 |
+| `POST /api/refresh`     | `api.refreshToken`  | refreshToken 유효성 확인 후 토큰 재발급              |
+| `GET /api/dashboard`    | `api.getDashboard`  | 현재 mock task 기준 업무 수 집계                     |
+| `GET /api/task?page=`   | `api.getTasks`      | page 단위 목록과 `hasNext` 반환                      |
+| `GET /api/task/{id}`    | `api.getTaskDetail` | 상세 데이터 또는 404 반환                            |
+| `DELETE /api/task/{id}` | `api.deleteTask`    | mock task 제거 후 `{ success: true }` 반환           |
+| `GET /api/user`         | `api.getUser`       | 사용자 `name`, `memo` 반환                           |
+
+## 인증/refresh token 흐름
+
+- 로그인 성공 시 `accessToken`, `refreshToken`을 localStorage에 저장합니다.
+- 인증 API 요청은 `requestWithAuth`를 통해 수행합니다.
+- access token이 없거나 인증 요청에서 401이 발생하면 `api.refreshToken`으로 token을 재발급한 뒤 요청을 한 번 재시도합니다.
+- refresh token이 없거나 유효하지 않으면 저장된 토큰을 제거하고 인증 필요 상태로 돌아갑니다.
+- OpenAPI의 refresh token cookie는 실제 서버가 없는 함수 mock 환경에서 localStorage 기반 입력으로 대체했습니다.
+
+## 가상 스크롤/무한 스크롤
+
+- 목록 컨테이너의 `scrollTop`과 고정 카드 높이(`TASK_ITEM_HEIGHT = 148`)를 기준으로 렌더링 범위를 계산합니다.
+- `VIRTUAL_OVERSCAN = 4`를 적용해 보이는 영역 주변 카드까지 렌더링합니다.
+- 스크롤이 하단에 가까워지면 `hasNext`가 true일 때 다음 page API를 호출합니다.
+
+## 제출/검증 참고
+
+| 항목             | 내용                    |
+| ---------------- | ----------------------- |
+| 요구사항 문서    | `docs/requirement 1.md` |
+| API 문서         | `docs/openapi 1.yaml`   |
+| 화면 결과 이미지 | `public/results`        |
+| AI 사용 문서     | `AI_USAGE.md` 확인 필요 |
+
+## 수동 확인 권장 항목
+
+- `/task`에서 실제 스크롤 끝 도달 시 다음 페이지가 이어서 로드되는지 확인
+- `/task/:id` 삭제 모달에서 id 입력 후 제출 시 `/task`로 이동하는지 확인
+- 새로고침 후 refresh token으로 인증 화면이 유지되는지 확인
+- 모바일 viewport에서 GNB/LNB 아이콘과 로그인/회원정보 전환 확인

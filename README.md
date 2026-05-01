@@ -2,6 +2,15 @@
 
 `docs/requirement 1.md`와 `docs/openapi 1.yaml`을 기준으로 구현한 React/TypeScript 프론트엔드 과제입니다. 별도 API 서버 없이 함수 레벨 mock API로 인증, 대시보드, 할 일 목록/상세, 삭제, 회원정보 흐름을 확인할 수 있습니다.
 
+## 개발 환경
+
+- Node.js: v24.13.0
+- npm: 11.6.2
+- Package manager: npm (`package-lock.json` 기준)
+- 주요 스택: React 19, TypeScript, Create React App, TailwindCSS
+- 환경 변수: 별도 `.env` 파일 없음
+- API 서버: 별도 서버 없이 `src/api/mockApi.ts`의 mock API 사용
+
 ## 실행 방법
 
 ```bash
